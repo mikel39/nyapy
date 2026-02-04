@@ -3,8 +3,9 @@ import re
 from bs4 import BeautifulSoup
 
 from .client import get_client
-from .enums import NyaaSite
-from .types.nyaa import ContentData, ResponseData
+from .enums import Filter as FilterEnum
+from .enums import NyaaFunCategories, NyaaSite, SukebeiCategories
+from .types.nyaa import ContentData, Filter, Order, ResponseData, Sort
 
 
 class BadResponse(Exception):
@@ -12,25 +13,36 @@ class BadResponse(Exception):
         super().__init__(message)
 
 
-class Nyaa:
+class Nyaa[T: str]:
     def __init__(self, site: NyaaSite) -> None:
-        self.client = get_client(site)
+        self._client = get_client(site)
+        self._categories_enum = (
+            NyaaFunCategories if NyaaSite.FUN == site else SukebeiCategories
+        )
 
     async def get_content(
-        self, *, filter, category, query, sort, order, page
+        self,
+        *,
+        filter: Filter | None = None,
+        category: T | None = None,
+        query: str | None = None,
+        page: int = 1,
+        sort: Sort | None = None,
+        order: Order = 'desc',
     ) -> ResponseData:
-        if sort == 'date':
-            sort = 'id'
+        sortval = 'id' if sort == 'date' else None
+        catval = self._categories_enum[category] if category else None
+        filterval = FilterEnum[filter] if filter else None
 
-        res = await self.client.get(
+        res = await self._client.get(
             '',
             params={
-                'f': filter,
-                'c': category,
+                'f': filterval,
                 'q': query,
                 'p': page,
-                's': sort,
+                's': sortval,
                 'o': order,
+                'c': catval,
             },
         )
 
@@ -54,7 +66,9 @@ class Nyaa:
             torrent = properties[2].find('i', {'class': 'fa-download'})
             torrent = torrent.parent if torrent else None
             torrent = torrent.get('href') if torrent else None
-            torrent = str(self.client.base_url)[:-1] + str(torrent) if torrent else None
+            torrent = (
+                str(self._client.base_url)[:-1] + str(torrent) if torrent else None
+            )
             magnet = properties[2].find('i', {'class': 'fa-magnet'})
             magnet = magnet.parent if magnet else None
             magnet = str(magnet.get('href')) if magnet else None
@@ -83,4 +97,4 @@ class Nyaa:
 
     async def close(self):
         """Closes connection to nyaa"""
-        await self.client.aclose()
+        await self._client.aclose()

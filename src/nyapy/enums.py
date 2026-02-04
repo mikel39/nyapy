@@ -40,8 +40,8 @@ class NyaaFunCategories(StrEnum):
 
 
 class Filter(IntEnum):
-    NO_REMAKES = 1
-    TRUSTED_ONLY = 2
+    no_remakes = 1
+    trusted_only = 2
 
 
 class NyaaSite(StrEnum):
