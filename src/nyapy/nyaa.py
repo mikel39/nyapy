@@ -49,8 +49,8 @@ class Nyaa:
             comments = int(comments.text) if comments else 0
             name = properties[1].find('a', {'class': False})
             (name, id) = (name.text, name.get('href')) if name else ('', '')
-            id = re.search(r'\d*', (str(id) or ''))
-            id = id.group(1) if id else 0
+            id = re.search(r'\d+', (str(id) or ''))
+            id = id.group(0) if id else 0
             torrent = properties[2].find('i', {'class': 'fa-download'})
             torrent = torrent.parent if torrent else None
             torrent = torrent.get('href') if torrent else None
