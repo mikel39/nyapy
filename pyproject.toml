@@ -1,6 +1,6 @@
 [project]
 name = "nyapy"
-version = "0.1.3"
+version = "0.1.5"
 authors = [
     { name = "mikel39", email = "202028875+mikel39@users.noreply.github.com" }
 ]
